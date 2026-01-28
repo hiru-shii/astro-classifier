@@ -243,32 +243,43 @@ if user_role == "Public User / Researcher":
         
         with col_search:
             st.subheader("1. Object Search (FR01)")
+            
+            # ### NEW: Initialize Session State to remember coordinates
+            if 'ra' not in st.session_state:
+                st.session_state['ra'] = 10.68  # Default (Andromeda)
+            if 'dec' not in st.session_state:
+                st.session_state['dec'] = 41.26
+            
             input_method = st.radio("Search by:", ["Coordinates", "Object Name"])
             
-            ra_val, dec_val = 0.0, 0.0
-            
             if input_method == "Object Name":
-                obj_name = st.text_input("Enter Object Name (e.g., Andromeda, M87)")
+                obj_name = st.text_input("Enter Object Name (e.g., M31, M87, Vega)")
                 if st.button("Resolve Coordinates"):
                     r, d = resolve_name(obj_name)
                     if r is not None:
-                        st.success(f"Resolved: RA {r:.4f}, DEC {d:.4f}")
-                        ra_val, dec_val = r, d
-                    else:
-                        st.error("Object not found in Simbad database.")
-            else:
-                ra_val = st.number_input("RA", value=145.0)
-                dec_val = st.number_input("DEC", value=1.0)
+                        # ### NEW: Save to Session State
+                        st.session_state['ra'] = r
+                        st.session_state['dec'] = d
+                        st.success(f"Resolved: {obj_name}")
+                        st.rerun() # Force refresh to update the boxes below
+            
+            # ### NEW: Link these input boxes to Session State
+            # This ensures they update automatically when you resolve a name
+            ra_val = st.number_input("RA (Degrees)", value=st.session_state['ra'])
+            dec_val = st.number_input("DEC (Degrees)", value=st.session_state['dec'])
 
             # FR07: Visualization (Sky View)
             if st.button("Visualise Object"):
+                # ### NEW: Use the variables that are actually linked to the boxes
+                st.write(f"Fetching image for RA: {ra_val:.4f}, DEC: {dec_val:.4f}...")
                 url = f"http://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?ra={ra_val}&dec={dec_val}&scale=0.4&width=300&height=300"
-                st.image(url, caption=f"Sky View (SDSS) at {ra_val:.2f}, {dec_val:.2f}")
+                st.image(url, caption=f"SDSS Sky View (RA={ra_val:.2f}, DEC={dec_val:.2f})")
 
         with col_vis:
             st.subheader("2. Photometric Classification")
             st.info("Input SDSS & WISE Magnitudes (FR04)")
             
+            # (No changes needed in this section)
             c1, c2, c3 = st.columns(3)
             u_mag = c1.number_input("u (SDSS)", value=19.0)
             g = c2.number_input("g (SDSS)", value=18.5)
