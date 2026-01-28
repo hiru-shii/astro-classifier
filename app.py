@@ -216,16 +216,12 @@ def preprocess_input(u_mag, g, r, i, z, w1, w2):
 # Helper: Resolve Name to Coordinates (FR01)
 def resolve_name(name):
     try:
-        result_table = Simbad.query_object(name)
-        if result_table is None:
-            return None, None
-        
-        # Get RA/DEC in degrees
-        ra = result_table['RA'][0]
-        dec = result_table['DEC'][0]
-        coord = SkyCoord(f"{ra} {dec}", unit=(u.hourangle, u.deg))
+        # SkyCoord.from_name is more robust. It checks Simbad, NED, and VizieR.
+        coord = SkyCoord.from_name(name)
         return coord.ra.deg, coord.dec.deg
     except Exception as e:
+        # This will print the specific error to your app screen so you can debug
+        st.error(f"Could not resolve '{name}'. Error details: {e}")
         return None, None
 
 # --- SIDEBAR NAVIGATION ---
