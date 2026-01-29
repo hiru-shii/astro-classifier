@@ -244,42 +244,54 @@ if user_role == "Public User / Researcher":
         with col_search:
             st.subheader("1. Object Search (FR01)")
             
-            # ### NEW: Initialize Session State to remember coordinates
+            # 1. Initialize Session State (Memory)
             if 'ra' not in st.session_state:
-                st.session_state['ra'] = 10.68  # Default (Andromeda)
+                st.session_state['ra'] = 10.6847  # Default: Andromeda (M31)
             if 'dec' not in st.session_state:
-                st.session_state['dec'] = 41.26
+                st.session_state['dec'] = 41.2687
+
+            # 2. Search Method Selection
+            input_method = st.radio("Search Method:", ["Enter Coordinates", "Resolve Object Name"])
             
-            input_method = st.radio("Search by:", ["Coordinates", "Object Name"])
-            
-            if input_method == "Object Name":
+            # 3. Logic for Name Resolution
+            if input_method == "Resolve Object Name":
                 obj_name = st.text_input("Enter Object Name (e.g., M31, M87, Vega)")
-                if st.button("Resolve Coordinates"):
+                if st.button("Find Coordinates"):
                     r, d = resolve_name(obj_name)
                     if r is not None:
-                        # ### NEW: Save to Session State
+                        # Update the Memory
                         st.session_state['ra'] = r
                         st.session_state['dec'] = d
-                        st.success(f"Resolved: {obj_name}")
-                        st.rerun() # Force refresh to update the boxes below
+                        st.success(f"Resolved: {obj_name} -> RA: {r:.4f}, DEC: {d:.4f}")
+                        st.rerun() # Refresh page to update the boxes below
             
-            # ### NEW: Link these input boxes to Session State
-            # This ensures they update automatically when you resolve a name
-            ra_val = st.number_input("RA (Degrees)", value=st.session_state['ra'])
-            dec_val = st.number_input("DEC (Degrees)", value=st.session_state['dec'])
+            # 4. Input Boxes (ALWAYS VISIBLE)
+            # These serve as the "Source of Truth" for the visualization button.
+            # They default to whatever is in the session_state.
+            st.markdown("---")
+            st.write("Target Coordinates:")
+            ra_val = st.number_input("RA (Degrees)", value=st.session_state['ra'], format="%.4f")
+            dec_val = st.number_input("DEC (Degrees)", value=st.session_state['dec'], format="%.4f")
 
-            # FR07: Visualization (Sky View)
+            # Update session state if user manually types in the boxes
+            st.session_state['ra'] = ra_val
+            st.session_state['dec'] = dec_val
+
+            # 5. Visualization Button
+            st.markdown("---")
             if st.button("Visualise Object"):
-                # ### NEW: Use the variables that are actually linked to the boxes
-                st.write(f"Fetching image for RA: {ra_val:.4f}, DEC: {dec_val:.4f}...")
+                # Now this GUARANTEES it uses the value from the boxes above
+                st.write(f"Fetching SDSS Image for RA: {ra_val:.4f}, DEC: {dec_val:.4f}...")
+                
+                # Use SDSS Image Cutout Service
                 url = f"http://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?ra={ra_val}&dec={dec_val}&scale=0.4&width=300&height=300"
-                st.image(url, caption=f"SDSS Sky View (RA={ra_val:.2f}, DEC={dec_val:.2f})")
+                st.image(url, caption=f"Sky View at {ra_val:.2f}, {dec_val:.2f}")
 
         with col_vis:
             st.subheader("2. Photometric Classification")
+            # ... (The rest of your classification code remains the same)
             st.info("Input SDSS & WISE Magnitudes (FR04)")
             
-            # (No changes needed in this section)
             c1, c2, c3 = st.columns(3)
             u_mag = c1.number_input("u (SDSS)", value=19.0)
             g = c2.number_input("g (SDSS)", value=18.5)
@@ -296,18 +308,15 @@ if user_role == "Public User / Researcher":
             if st.button("Classify Object (FR02)"):
                 input_df = preprocess_input(u_mag, g, r, i, z, w1, w2)
                 
-                # NFR03: Fast Query
                 prediction = model.predict(input_df)[0]
                 probs = model.predict_proba(input_df)[0]
                 
                 st.divider()
                 st.markdown(f"### Result: **{prediction}**")
                 
-                # FR03: Confidence Score
                 prob_df = pd.DataFrame({'Class': model.classes_, 'Confidence': probs})
                 st.bar_chart(prob_df.set_index('Class'))
                 
-                # FR08: Source Indication
                 st.caption("Data Sources Used: SDSS (Optical) + WISE (Infrared)")
 
     # --- USE CASE: BATCH UPLOAD (FR05, FR06) ---
