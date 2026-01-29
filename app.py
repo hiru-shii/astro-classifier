@@ -280,41 +280,20 @@ if user_role == "Public User / Researcher":
             # 5. Visualization Button
             st.markdown("---")
             if st.button("Visualise Object"):
-                st.write(f"Fetching SDSS Image for RA: {ra_val:.4f}, DEC: {dec_val:.4f}...")
+                st.write(f"Fetching Sky View for RA: {ra_val:.4f}, DEC: {dec_val:.4f}...")
                 
-                # Use HTTPS (Secure) and a wider Field of View (scale=0.2 is zoomed out slightly)
-                img_url = f"https://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?ra={ra_val}&dec={dec_val}&scale=0.2&width=400&height=400"
+                # OPTION 1: Legacy Survey (Faster, Newer, Better Coverage)
+                # We use layer='ls-dr10' which combines SDSS with newer data.
+                image_url = f"https://www.legacysurvey.org/viewer/cutout.jpg?ra={ra_val}&dec={dec_val}&layer=ls-dr10&pixscale=0.5&size=400"
                 
-                # Debug: Show the link so you can click it manually if needed
-                st.markdown(f"[Click here to view source image directly]({img_url})")
-
-                try:
-                    import requests
-                    from PIL import Image
-                    from io import BytesIO
-                    
-                    # FIX 1: Add Headers.
-                    # This tells the server "I am a browser, not a robot," which often prevents blocking.
-                    headers = {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                    }
-
-                    # FIX 2: Increase Timeout.
-                    # Changed from timeout=5 to timeout=20 seconds.
-                    response = requests.get(img_url, headers=headers, timeout=20)
-                    
-                    if response.status_code == 200:
-                        image = Image.open(BytesIO(response.content))
-                        st.image(image, caption=f"SDSS Sky View (RA={ra_val:.2f}, DEC={dec_val:.2f})")
-                    else:
-                        st.error(f"SDSS Server responded with Code {response.status_code}. The server might be down temporarily.")
+                # Display directly - Streamlit handles the loading efficiently
+                st.image(
+                    image_url, 
+                    caption=f"Sky View (Legacy Survey DR10) at RA={ra_val:.2f}, DEC={dec_val:.2f}",
+                    use_container_width=True
+                )
                 
-                except requests.exceptions.Timeout:
-                    st.error("Server Timeout: The SDSS telescope server is taking too long to reply.")
-                    st.info("Tip: Click the 'Click here to view source image directly' link above. It might load better in a new tab.")
-                
-                except Exception as e:
-                    st.error(f"Visualization Error: {e}")
+                st.caption(f"[View interactive map on Legacy Survey]({image_url})")
 
         with col_vis:
             st.subheader("2. Photometric Classification")
