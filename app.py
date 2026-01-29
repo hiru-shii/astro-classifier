@@ -293,20 +293,28 @@ if user_role == "Public User / Researcher":
                     from PIL import Image
                     from io import BytesIO
                     
-                    # 1. Download the image explicitly
-                    response = requests.get(img_url, timeout=5)
+                    # FIX 1: Add Headers.
+                    # This tells the server "I am a browser, not a robot," which often prevents blocking.
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+
+                    # FIX 2: Increase Timeout.
+                    # Changed from timeout=5 to timeout=20 seconds.
+                    response = requests.get(img_url, headers=headers, timeout=20)
                     
-                    # 2. Check if the server responded correctly
                     if response.status_code == 200:
                         image = Image.open(BytesIO(response.content))
                         st.image(image, caption=f"SDSS Sky View (RA={ra_val:.2f}, DEC={dec_val:.2f})")
                     else:
-                        st.error("SDSS Server Error: The telescope server is busy or down.")
+                        st.error(f"SDSS Server responded with Code {response.status_code}. The server might be down temporarily.")
+                
+                except requests.exceptions.Timeout:
+                    st.error("Server Timeout: The SDSS telescope server is taking too long to reply.")
+                    st.info("Tip: Click the 'Click here to view source image directly' link above. It might load better in a new tab.")
                 
                 except Exception as e:
-                    st.warning("Image Load Failed.")
-                    st.info("Why? The object might be outside the SDSS 'Footprint' (the area the telescope actually scanned).")
-                    st.caption(f"Error details: {e}")
+                    st.error(f"Visualization Error: {e}")
 
         with col_vis:
             st.subheader("2. Photometric Classification")
