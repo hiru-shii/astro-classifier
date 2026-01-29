@@ -280,12 +280,33 @@ if user_role == "Public User / Researcher":
             # 5. Visualization Button
             st.markdown("---")
             if st.button("Visualise Object"):
-                # Now this GUARANTEES it uses the value from the boxes above
                 st.write(f"Fetching SDSS Image for RA: {ra_val:.4f}, DEC: {dec_val:.4f}...")
                 
-                # Use SDSS Image Cutout Service
-                url = f"http://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?ra={ra_val}&dec={dec_val}&scale=0.4&width=300&height=300"
-                st.image(url, caption=f"Sky View at {ra_val:.2f}, {dec_val:.2f}")
+                # Use HTTPS (Secure) and a wider Field of View (scale=0.2 is zoomed out slightly)
+                img_url = f"https://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?ra={ra_val}&dec={dec_val}&scale=0.2&width=400&height=400"
+                
+                # Debug: Show the link so you can click it manually if needed
+                st.markdown(f"[Click here to view source image directly]({img_url})")
+
+                try:
+                    import requests
+                    from PIL import Image
+                    from io import BytesIO
+                    
+                    # 1. Download the image explicitly
+                    response = requests.get(img_url, timeout=5)
+                    
+                    # 2. Check if the server responded correctly
+                    if response.status_code == 200:
+                        image = Image.open(BytesIO(response.content))
+                        st.image(image, caption=f"SDSS Sky View (RA={ra_val:.2f}, DEC={dec_val:.2f})")
+                    else:
+                        st.error("SDSS Server Error: The telescope server is busy or down.")
+                
+                except Exception as e:
+                    st.warning("Image Load Failed.")
+                    st.info("Why? The object might be outside the SDSS 'Footprint' (the area the telescope actually scanned).")
+                    st.caption(f"Error details: {e}")
 
         with col_vis:
             st.subheader("2. Photometric Classification")
