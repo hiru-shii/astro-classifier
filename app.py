@@ -466,33 +466,45 @@ if user_role == "Public User / Researcher":
         uploaded_file = st.file_uploader("Upload CSV", type="csv")
         
         if uploaded_file:
-            batch_df = pd.read_csv(uploaded_file)
-            st.write(f"Loaded {len(batch_df)} objects.")
+            # FIX 1: Use a context manager to keep the file open safely
+            try:
+                batch_df = pd.read_csv(uploaded_file)
+                
+                # FIX 2: Sanitize Column Names
+                # This removes accidental spaces and forces lowercase (e.g., " U " -> "u")
+                batch_df.columns = batch_df.columns.str.strip().str.lower()
+                
+                st.write(f"Loaded {len(batch_df)} objects.")
+                
+                # Check if required columns exist before letting them click the button
+                required_cols = ['u', 'g', 'r', 'i', 'z', 'w1', 'w2']
+                missing_cols = [col for col in required_cols if col not in batch_df.columns]
+                
+                if missing_cols:
+                    st.error(f"Missing columns: {missing_cols}")
+                    st.info("Please ensure your CSV headers are exactly: u, g, r, i, z, w1, w2")
+                else:
+                    if st.button("Process Batch Queue"):
+                        features = pd.DataFrame()
+                        features['u_g'] = batch_df['u'] - batch_df['g']
+                        features['g_r'] = batch_df['g'] - batch_df['r']
+                        features['r_i'] = batch_df['r'] - batch_df['i']
+                        features['i_z'] = batch_df['i'] - batch_df['z']
+                        features['z_w1'] = batch_df['z'] - batch_df['w1']
+                        features['w1'] = batch_df['w1']
+                        features['w2'] = batch_df['w2']
+                        
+                        preds = model.predict(features)
+                        batch_df['GalaxEye_Class'] = preds
+                        
+                        st.success("Processing Complete!")
+                        st.dataframe(batch_df.head())
+                        
+                        csv = batch_df.to_csv(index=False).encode('utf-8')
+                        st.download_button("Download Classified Catalog", csv, "galaxeye_results.csv", "text/csv")
             
-            if st.button("Process Batch Queue"):
-                try:
-                    features = pd.DataFrame()
-                    features['u_g'] = batch_df['u'] - batch_df['g']
-                    features['g_r'] = batch_df['g'] - batch_df['r']
-                    features['r_i'] = batch_df['r'] - batch_df['i']
-                    features['i_z'] = batch_df['i'] - batch_df['z']
-                    features['z_w1'] = batch_df['z'] - batch_df['w1']
-                    features['w1'] = batch_df['w1']
-                    features['w2'] = batch_df['w2']
-                    
-                    preds = model.predict(features)
-                    batch_df['GalaxEye_Class'] = preds
-                    
-                    st.success("Processing Complete!")
-                    st.dataframe(batch_df.head())
-                    
-                    # FR06: Download Output
-                    csv = batch_df.to_csv(index=False).encode('utf-8')
-                    st.download_button("Download Classified Catalog", csv, "galaxeye_results.csv", "text/csv")
-                    
-                except Exception as e:
-                    # NFR04: Succinct Error Message
-                    st.error(f"Processing failed: {e}. Check your column names.")
+            except Exception as e:
+                st.error(f"Error reading file: {e}")
 
     # --- UPGRADE: FR10 (Explore Mode) ---
     with tab3:
