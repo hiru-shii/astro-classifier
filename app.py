@@ -339,8 +339,8 @@ st.markdown("""
     /* 1. Animated Deep Space Background */
     .stApp {
         /* We use a linear gradient to add a dark overlay, ensuring text remains readable */
-        background: linear-gradient(rgba(5, 10, 20, 0.75), rgba(5, 10, 20, 0.75)), 
-                    url('https://cdn.pixabay.com/animation/2023/06/26/03/02/03-02-03-917_512.gif');
+        background: linear-gradient(rgba(5, 10, 20, 0.3), rgba(5, 10, 20, 0.3)), 
+                    url('https://media.giphy.com/media/aBkyzJCILoGqI/giphy.gif');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
