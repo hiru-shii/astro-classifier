@@ -340,7 +340,7 @@ st.markdown("""
     .stApp {
         /* We use a linear gradient to add a dark overlay, ensuring text remains readable */
         background: linear-gradient(rgba(5, 10, 20, 0.3), rgba(5, 10, 20, 0.3)), 
-                    url('https://media.giphy.com/media/aBkyzJCILoGqI/giphy.gif');
+                    url('https://media.giphy.com/media/xT1R9B7cGalGteq1kQ/giphy.gif');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
