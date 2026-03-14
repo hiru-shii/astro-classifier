@@ -333,48 +333,76 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. PROFESSIONAL STYLING (CSS) ---
+# --- 2. PROFESSIONAL STYLING & ANIMATED BACKGROUND (CSS) ---
 st.markdown("""
     <style>
-    /* Main background and font */
+    /* 1. Animated Deep Space Background */
     .stApp {
-        background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), 
-                    url('https://www.transparenttextures.com/patterns/stardust.png');
+        /* We use a linear gradient to add a dark overlay, ensuring text remains readable */
+        background: linear-gradient(rgba(5, 10, 20, 0.75), rgba(5, 10, 20, 0.75)), 
+                    url('https://cdn.pixabay.com/animation/2023/06/26/03/02/03-02-03-917_512.gif');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
     }
     
-    /* Custom Card Design */
-    .metric-card {
-        background-color: rgba(255, 255, 255, 0.05);
-        padding: 20px;
-        border-radius: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        text-align: center;
+    /* 2. Glassmorphism effect for the main content block */
+    .block-container {
+        background: rgba(16, 20, 30, 0.6); /* Semi-transparent dark blue */
+        backdrop-filter: blur(10px); /* Frosted glass blur effect */
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 2rem;
+    }
+
+    /* 3. Custom Card Design for Metrics & Inputs */
+    div[data-testid="stMetric"], div[data-testid="stContainer"] {
+        background-color: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     
-    /* Sidebar styling */
+    /* Hover effect for cards to make UI feel interactive */
+    div[data-testid="stMetric"]:hover, div[data-testid="stContainer"]:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 200, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    
+    /* 4. Sidebar styling (Sleek dark blur) */
     section[data-testid="stSidebar"] {
-        background-color: #0e1117;
-        border-right: 1px solid #30363d;
+        background: rgba(10, 14, 23, 0.85);
+        backdrop-filter: blur(15px);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
     }
     
-    /* Headers */
+    /* 5. Headers & Text Styling */
     h1, h2, h3 {
-        color: #e6edf3 !important;
-        font-family: 'Inter', sans-serif;
+        color: #f0f6fc !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        text-shadow: 0px 0px 10px rgba(255,255,255,0.1); /* Slight glow on titles */
     }
     
-    /* Button Hover Effects */
+    /* 6. Glowing Button Effects */
     .stButton>button {
         width: 100%;
         border-radius: 8px;
         transition: all 0.3s ease;
-        background-color: #1f6feb;
+        background: linear-gradient(90deg, #0d6efd 0%, #0dcaf0 100%);
         color: white;
+        border: none;
+        font-weight: bold;
     }
     .stButton>button:hover {
-        background-color: #388bfd;
-        border-color: #8b949e;
-        transform: translateY(-2px);
+        transform: scale(1.02);
+        box-shadow: 0 0 15px rgba(13, 202, 240, 0.6);
     }
     </style>
     """, unsafe_allow_html=True)
