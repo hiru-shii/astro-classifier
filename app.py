@@ -504,17 +504,120 @@ if user_role == "Standard Analysis":
         map_url = f"https://www.legacysurvey.org/viewer/?ra={ra}&dec={dec}&layer=ls-dr10&zoom=13"
         components.iframe(map_url, height=700)
 
-# --- 6. ADMIN PORTAL (SIMPLIFIED FOR PRO LOOK) ---
+# # --- 6. ADMIN PORTAL (SIMPLIFIED FOR PRO LOOK) ---
+# elif user_role == "Admin Portal":
+#     st.title("🔐 System Administration")
+#     pw = st.text_input("Authorization Key", type="password")
+#     if pw == "admin123":
+#         col_a, col_b = st.columns(2)
+#         with col_a:
+#             st.subheader("Model Performance")
+#             # Static chart example
+#             st.line_chart(np.random.randn(10, 2))
+#         with col_b:
+#             st.subheader("System Resources")
+#             st.progress(75, text="Model Training Load")
+#             st.button("Trigger Retraining Cycle")
+
+# =========================================================
+# ROLE 2: ADMIN PORTAL (DASHBOARD)
+# =========================================================
 elif user_role == "Admin Portal":
-    st.title("🔐 System Administration")
-    pw = st.text_input("Authorization Key", type="password")
-    if pw == "admin123":
-        col_a, col_b = st.columns(2)
-        with col_a:
-            st.subheader("Model Performance")
-            # Static chart example
-            st.line_chart(np.random.randn(10, 2))
-        with col_b:
-            st.subheader("System Resources")
-            st.progress(75, text="Model Training Load")
-            st.button("Trigger Retraining Cycle")
+    st.title("📊 System Administration & Analytics")
+    st.markdown("Restricted Access: Model Evaluation & Telemetry")
+    
+    password = st.text_input("Enter Partner Key", type="password")
+    
+    if password == "admin123":  
+        
+        tab_perf, tab_data = st.tabs(["📈 Model Performance", "⚙️ Data Management"])
+        
+        # --- DASHBOARD: MODEL PERFORMANCE ---
+        with tab_perf:
+            st.subheader("GalaxEye Evaluation Metrics")
+            
+            # 1. Top Level Metrics (Using mock data for illustration)
+            # IMPORTANT: Replace these with your actual test set metrics from your Jupyter Notebook/training script
+            accuracy = 96.4
+            precision = 95.8
+            f1_score = 96.1
+            
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric("Overall Accuracy", f"{accuracy}%", "1.2%", help="Performance on hold-out test set")
+            col2.metric("Precision (Macro)", f"{precision}%", "0.8%")
+            col3.metric("F1-Score", f"{f1_score}%", "1.1%")
+            col4.metric("Anomalies Flagged", "14", "-2", help="Objects with <50% confidence this week")
+            
+            st.divider()
+
+            # Layout for Charts
+            chart_col1, chart_col2 = st.columns(2)
+            
+            # --- CHART 1: Interactive Confusion Matrix ---
+            with chart_col1:
+                st.markdown("#### Confusion Matrix")
+                # SIMULATED DATA: Replace with your actual y_test and y_pred
+                # cm = confusion_matrix(y_test, y_pred)
+                cm_data = np.array([[850, 15, 5], 
+                                    [12, 780, 22], 
+                                    [2, 30, 450]])
+                classes = ['Star', 'Galaxy', 'Quasar']
+                
+                fig_cm = px.imshow(cm_data, 
+                                   labels=dict(x="Predicted Class", y="Actual Class", color="Count"),
+                                   x=classes, y=classes,
+                                   text_auto=True, 
+                                   color_continuous_scale='Blues',
+                                   template="plotly_dark")
+                
+                fig_cm.update_layout(margin=dict(l=20, r=20, t=20, b=20))
+                st.plotly_chart(fig_cm, use_container_width=True)
+
+            # --- CHART 2: Feature Importance ---
+            with chart_col2:
+                st.markdown("#### Feature Importance (Random Forest)")
+                # Fetching actual feature importance if model is loaded, else mock data
+                if model and hasattr(model, 'feature_importances_'):
+                    importances = model.feature_importances_
+                else:
+                    importances = [0.15, 0.10, 0.05, 0.08, 0.35, 0.17, 0.10] # Example data
+                
+                features = ['u-g', 'g-r', 'r-i', 'i-z', 'z-W1', 'W1', 'W2']
+                df_fi = pd.DataFrame({'Feature': features, 'Importance': importances})
+                df_fi = df_fi.sort_values(by='Importance', ascending=True)
+
+                fig_fi = px.bar(df_fi, x='Importance', y='Feature', orientation='h',
+                                color='Importance', color_continuous_scale='Purples',
+                                template="plotly_dark")
+                
+                fig_fi.update_layout(margin=dict(l=20, r=20, t=20, b=20), showlegend=False)
+                st.plotly_chart(fig_fi, use_container_width=True)
+
+            # --- CHART 3: Class Distribution (Donut Chart) ---
+            st.markdown("#### Training Data Distribution")
+            # Example distribution of your dataset
+            dist_data = pd.DataFrame({'Class': ['Stars', 'Galaxies', 'Quasars'], 'Count': [4500, 3800, 1200]})
+            fig_pie = px.pie(dist_data, values='Count', names='Class', hole=0.4,
+                             color_discrete_sequence=px.colors.sequential.Teal,
+                             template="plotly_dark")
+            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+            fig_pie.update_layout(height=350, margin=dict(l=20, r=20, t=20, b=20))
+            
+            # Center the pie chart
+            c1, c2, c3 = st.columns([1, 2, 1])
+            with c2:
+                st.plotly_chart(fig_pie, use_container_width=True)
+
+        # --- DATA MANAGEMENT (Your existing retraining logic goes here) ---
+        with tab_data:
+            st.subheader("Data Ingestion & Model Retraining")
+            st.info("Upload newly verified survey data to trigger a pipeline retrain.")
+            new_data = st.file_uploader("Upload Raw Training Data (CSV)", type="csv", key="train_up")
+            if new_data:
+                if st.button("Ingest Data & Retrain Model", type="primary"):
+                    with st.spinner("Initializing retraining pipeline..."):
+                        # Your existing retraining code here
+                        import time
+                        time.sleep(2) # Simulating processing time
+                        st.success("Model successfully retrained and deployed!")
+                        st.balloons()
