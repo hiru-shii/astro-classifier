@@ -314,240 +314,6 @@
 
 
 
-#=================UI MODIFICATION======================
-
-# import streamlit as st
-# import pandas as pd
-# import numpy as np
-# import joblib
-# import matplotlib.pyplot as plt
-# import os
-# from astropy.coordinates import SkyCoord
-# import streamlit.components.v1 as components
-
-# # --- 1. PAGE CONFIGURATION ---
-# st.set_page_config(
-#     page_title="GalaxEye Pro | Celestial Classifier",
-#     layout="wide",
-#     page_icon="🔭",
-#     initial_sidebar_state="expanded"
-# )
-
-# # --- 2. PROFESSIONAL STYLING & ANIMATED BACKGROUND (CSS) ---
-# st.markdown("""
-#     <style>
-#     /* 1. Animated Deep Space Background */
-#     .stApp {
-#         /* We use a linear gradient to add a dark overlay, ensuring text remains readable */
-#         background: linear-gradient(rgba(5, 10, 20, 0.3), rgba(5, 10, 20, 0.3)), 
-#                     url('https://pixabay.com/gifs/galaxy-universe-cosmos-sky-3468/');
-#         background-size: cover;
-#         background-position: center;
-#         background-attachment: fixed;
-#         background-repeat: no-repeat;
-#     }
-    
-#     /* 2. Glassmorphism effect for the main content block */
-#     .block-container {
-#         background: rgba(16, 20, 30, 0.6); /* Semi-transparent dark blue */
-#         backdrop-filter: blur(10px); /* Frosted glass blur effect */
-#         -webkit-backdrop-filter: blur(10px);
-#         border-radius: 20px;
-#         padding-top: 2rem;
-#         padding-bottom: 2rem;
-#         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-#         border: 1px solid rgba(255, 255, 255, 0.05);
-#         margin-top: 2rem;
-#     }
-
-#     /* 3. Custom Card Design for Metrics & Inputs */
-#     div[data-testid="stMetric"], div[data-testid="stContainer"] {
-#         background-color: rgba(255, 255, 255, 0.03);
-#         border-radius: 12px;
-#         border: 1px solid rgba(255, 255, 255, 0.08);
-#         padding: 15px;
-#         transition: transform 0.3s ease, box-shadow 0.3s ease;
-#     }
-    
-#     /* Hover effect for cards to make UI feel interactive */
-#     div[data-testid="stMetric"]:hover, div[data-testid="stContainer"]:hover {
-#         transform: translateY(-3px);
-#         box-shadow: 0 10px 20px rgba(0, 200, 255, 0.1);
-#         border: 1px solid rgba(255, 255, 255, 0.15);
-#     }
-    
-#     /* 4. Sidebar styling (Sleek dark blur) */
-#     section[data-testid="stSidebar"] {
-#         background: rgba(10, 14, 23, 0.85);
-#         backdrop-filter: blur(15px);
-#         border-right: 1px solid rgba(255, 255, 255, 0.05);
-#     }
-    
-#     /* 5. Headers & Text Styling */
-#     h1, h2, h3 {
-#         color: #f0f6fc !important;
-#         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-#         text-shadow: 0px 0px 10px rgba(255,255,255,0.1); /* Slight glow on titles */
-#     }
-    
-#     /* 6. Glowing Button Effects */
-#     .stButton>button {
-#         width: 100%;
-#         border-radius: 8px;
-#         transition: all 0.3s ease;
-#         background: linear-gradient(90deg, #0d6efd 0%, #0dcaf0 100%);
-#         color: white;
-#         border: none;
-#         font-weight: bold;
-#     }
-#     .stButton>button:hover {
-#         transform: scale(1.02);
-#         box-shadow: 0 0 15px rgba(13, 202, 240, 0.6);
-#     }
-#     </style>
-#     """, unsafe_allow_html=True)
-
-# # --- 3. UTILITIES & MODEL LOADING ---
-# @st.cache_resource
-# def load_model():
-#     MODEL_FILE = 'astro_classifier_model.pkl'
-#     if os.path.exists(MODEL_FILE):
-#         return joblib.load(MODEL_FILE)
-#     return None
-
-# model = load_model()
-
-# def preprocess_input(u_mag, g, r, i, z, w1, w2):
-#     data = {
-#         'u_g': u_mag - g, 'g_r': g - r, 'r_i': r - i,
-#         'i_z': i - z, 'z_w1': z - w1, 'w1': w1, 'w2': w2
-#     }
-#     return pd.DataFrame([data])[['u_g', 'g_r', 'r_i', 'i_z', 'z_w1', 'w1', 'w2']]
-
-# def resolve_name(name):
-#     try:
-#         coord = SkyCoord.from_name(name)
-#         return coord.ra.deg, coord.dec.deg
-#     except:
-#         return None, None
-
-# # --- 4. SIDEBAR NAVIGATION ---
-# with st.sidebar:
-#     st.image("https://cdn-icons-png.flaticon.com/512/2534/2534515.png", width=80)
-#     st.title("GalaxEye Pro")
-#     st.markdown("---")
-#     user_role = st.selectbox("Navigation Mode", ["Standard Analysis", "Admin Portal"])
-#     st.markdown("---")
-#     st.info("System Status: **Online**")
-
-# # --- 5. MAIN INTERFACE ---
-# if user_role == "Standard Analysis":
-#     st.title("🌌 Celestial Classification Engine")
-#     st.caption("Deep Space Object Identification via Multimodal Photometry")
-
-#     tab1, tab2, tab3 = st.tabs(["🎯 Single Object", "📂 Batch Processing", "🗺️ Sky Explorer"])
-
-#     with tab1:
-#         # Layout: Top row for inputs, Bottom row for results
-#         col_input, col_vis = st.columns([1, 1.2], gap="medium")
-        
-#         with col_input:
-#             with st.container(border=True):
-#                 st.subheader("1. Identify Target")
-#                 input_method = st.segmented_control("Method", ["Coordinates", "Object Name"], default="Coordinates")
-                
-#                 if input_method == "Object Name":
-#                     obj_name = st.text_input("Simbad Resolver", placeholder="e.g. M31 or Andromeda")
-#                     if st.button("Resolve Target"):
-#                         with st.spinner("Querying Simbad..."):
-#                             r, d = resolve_name(obj_name)
-#                             if r:
-#                                 st.session_state.ra, st.session_state.dec = r, d
-#                                 st.success("Target Locked!")
-                
-#                 c1, c2 = st.columns(2)
-#                 ra = c1.number_input("Right Ascension", value=st.session_state.get('ra', 10.68), format="%.4f")
-#                 dec = c2.number_input("Declination", value=st.session_state.get('dec', 41.26), format="%.4f")
-                
-#                 if st.button("Fetch Sky Preview"):
-#                     img_url = f"https://www.legacysurvey.org/viewer/cutout.jpg?ra={ra}&dec={dec}&layer=ls-dr10&pixscale=0.5&size=400"
-#                     st.image(img_url, caption="Target Visual Acquisition", use_container_width=True)
-
-#         with col_vis:
-#             with st.container(border=True):
-#                 st.subheader("2. Photometric Data")
-#                 st.write("Optical (SDSS) & IR (WISE)")
-                
-#                 m1, m2, m3 = st.columns(3)
-#                 u = m1.number_input("u-mag", value=19.0)
-#                 g = m2.number_input("g-mag", value=18.5)
-#                 r = m3.number_input("r-mag", value=18.0)
-                
-#                 m4, m5, m6, m7 = st.columns(4)
-#                 i = m4.number_input("i-mag", value=17.5)
-#                 z = m5.number_input("z-mag", value=17.0)
-#                 w1 = m6.number_input("W1", value=16.0)
-#                 w2 = m7.number_input("W2", value=15.5)
-
-#                 if st.button("Run Classification Analysis", type="primary"):
-#                     if model:
-#                         features = preprocess_input(u, g, r, i, z, w1, w2)
-#                         prediction = model.predict(features)[0]
-#                         probs = model.predict_proba(features)[0]
-#                         conf = np.max(probs) * 100
-                        
-#                         # --- RESULTS SECTION ---
-#                         st.markdown("---")
-#                         res_col1, res_col2 = st.columns(2)
-                        
-#                         with res_col1:
-#                             st.metric("Predicted Class", prediction)
-#                         with res_col2:
-#                             st.metric("Confidence Score", f"{conf:.2f}%")
-                        
-#                         if conf < 50:
-#                             st.warning("⚠️ High Uncertainty: Object may be an anomaly.")
-                        
-#                         st.bar_chart(pd.DataFrame({'Class': model.classes_, 'Prob': probs}).set_index('Class'))
-#                     else:
-#                         st.error("Model not loaded.")
-
-#     with tab2:
-#         st.subheader("Bulk Catalog Processing")
-#         uploaded_file = st.file_uploader("Drop CSV file here", type="csv")
-#         if uploaded_file:
-#             # Reusing your logic but with a 'Status' progress bar
-#             df = pd.read_csv(uploaded_file)
-#             st.dataframe(df.head(), use_container_width=True)
-#             if st.button("Process Catalog"):
-#                 with st.status("Analyzing catalog...", expanded=True) as status:
-#                     # (Simulation of your batch logic)
-#                     st.write("Extracting features...")
-#                     st.write("Running Inference...")
-#                     status.update(label="Classification Complete!", state="complete", expanded=False)
-#                 st.balloons()
-
-#     with tab3:
-#         st.subheader("Interactive Sky Survey")
-#         map_url = f"https://www.legacysurvey.org/viewer/?ra={ra}&dec={dec}&layer=ls-dr10&zoom=13"
-#         components.iframe(map_url, height=700)
-
-# # --- 6. ADMIN PORTAL (SIMPLIFIED FOR PRO LOOK) ---
-# elif user_role == "Admin Portal":
-#     st.title("🔐 System Administration")
-#     pw = st.text_input("Authorization Key", type="password")
-#     if pw == "admin123":
-#         col_a, col_b = st.columns(2)
-#         with col_a:
-#             st.subheader("Model Performance")
-#             # Static chart example
-#             st.line_chart(np.random.randn(10, 2))
-#         with col_b:
-#             st.subheader("System Resources")
-#             st.progress(75, text="Model Training Load")
-#             st.button("Trigger Retraining Cycle")
-
-
 #==============================UI MODIFICATION VERSION 2===============================
 
 import streamlit as st
@@ -561,7 +327,7 @@ import streamlit.components.v1 as components
 
 # --- 1. PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="GalaxEye Pro | Celestial Classifier",
+    page_title="GalaxEye | STAR, GALAXY, QUASAR Classifier",
     layout="wide",
     page_icon="🔭",
     initial_sidebar_state="expanded"
@@ -669,7 +435,7 @@ def resolve_name(name):
 # --- 4. SIDEBAR NAVIGATION ---
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/2534/2534515.png", width=80)
-    st.title("GalaxEye Pro")
+    st.title("GalaxEye")
     st.markdown("---")
     user_role = st.selectbox("Navigation Mode", ["Standard Analysis", "Admin Portal"])
     st.markdown("---")
@@ -678,7 +444,7 @@ with st.sidebar:
 # --- 5. MAIN INTERFACE ---
 if user_role == "Standard Analysis":
     st.title("🌌 Celestial Classification Engine")
-    st.caption("Deep Space Object Identification via Multimodal Photometry")
+    st.caption("Star, Galaxy, Quasar Identification via Multimodal Photometry")
 
     tab1, tab2, tab3 = st.tabs(["🎯 Single Object", "📂 Batch Processing", "🗺️ Sky Explorer"])
 
